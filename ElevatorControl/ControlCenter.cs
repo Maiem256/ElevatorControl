@@ -20,7 +20,6 @@ public class ControlCenter
     /// <returns> The first available elevator, or null if none are available </returns>
     public Elevator? CallElevator(int calledFromFloor)
     {
-
         if (_availableElevators.Count > 0)
         {
             var elevator = _availableElevators.First();
@@ -39,19 +38,10 @@ public class ControlCenter
     }
 
     /// <summary>
-    /// Adds an elevator to the list of available units. 
-    /// </summary>
-    /// <param name="elevator"> Newly available elevator </param>
-    public void MakeElevatorAvailable(Elevator elevator)
-    {
-        _availableElevators.Add(elevator);
-    }
-
-    /// <summary>
     /// Moves a given elevator according to its planned stops.
     /// </summary>
     /// <param name="elevator"> Elevator that will move </param>
-    public static void MoveElevator(Elevator elevator)
+    public void MoveElevator(Elevator elevator)
     {
         CancellationTokenSource cts = new();
 
@@ -61,6 +51,7 @@ public class ControlCenter
         if(Console.ReadKey(true).Key == ConsoleKey.Enter)
             cts.Cancel();
 
+        _availableElevators.Add(elevator);
         cts.Dispose();
     }
 }

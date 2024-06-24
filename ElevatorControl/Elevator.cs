@@ -12,8 +12,8 @@ public class Elevator(int initialFloor = 1)
         && _stops.First() > _currentFloor;
 
     /// <summary>
-    /// Calculate how much time the elevator will take to get to a specific 
-    /// floor, assuming each floor takes 1 sec to pass and each stop along 
+    /// Calculate how much time the elevator will take to get to a specific floor in 
+    /// seconds, assuming each floor takes 1 sec to pass and each stop along 
     /// the way takes 3 sec before resuming.
     /// </summary>
     /// <param name="destinationFloor"> Floor which travel time is calculated for </param>
@@ -31,7 +31,7 @@ public class Elevator(int initialFloor = 1)
         {
             travelTime = _currentFloor - destinationFloor - 1;
             var stopsUntilDest = _stops.Where(x => x > destinationFloor);
-            travelTime += stopsUntilDest.Count() * 2; // Add additional 2s per stop
+            travelTime += stopsUntilDest.Count() * 2; 
         }
         return travelTime;
     }
@@ -52,31 +52,54 @@ public class Elevator(int initialFloor = 1)
     }
 
     /// <summary>
-    /// Executes the planned stops 
+    /// Executes the planned stops.
     /// </summary>
     /// <returns> The last stop in the execution plan </returns>
-    public int Execute(CancellationToken token)
+    internal int Execute(CancellationToken token)
     {
         do
         {
             Console.WriteLine($"Lift going {(GoingUp ? "up" : "down")}");
 
             int nextStop = _stops.First();
-            for (int i = _currentFloor; i < nextStop; i++)
+
+            // Don't like this block, repetitive and ugly. Could maybe be improved with an event
+            // that fired upon reaching each floor? Would also make it easier for ControlCenter
+            // to keep track of all elevators current floors
+            if (GoingUp)
             {
-                if (token.IsCancellationRequested)
+                for (int i = _currentFloor; i < nextStop; i++)
                 {
-                    Console.WriteLine($"Emergency stop pressed! Stopping at {i}");
-                    break;
+                    if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine($"Emergency stop pressed! Stopping at {i}");
+                        _currentFloor = i;
+                        return i;
+                    }
+                    Console.WriteLine($"Current floor: {i}");
+                    Thread.Sleep(1000);
                 }
-                Console.WriteLine($"Current floor: {i}");
-                Thread.Sleep(1000);
+            }
+            else
+            {
+                for (int i = _currentFloor; i > nextStop; i--)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine($"Emergency stop pressed! Stopping at {i}");
+                        _currentFloor = i;
+                        return i;
+                    }
+                    Console.WriteLine($"Current floor: {i}");
+                    Thread.Sleep(1000);
+                }
             }
 
             _currentFloor = nextStop;
             _stops.Remove(_currentFloor);
 
-            Console.WriteLine($"\nArrived at floor {_currentFloor}");
+            Console.WriteLine($"Arrived at floor {_currentFloor}");
+            Thread.Sleep(3000);
         } while (_stops.Count > 0);
 
 

@@ -16,7 +16,7 @@ public class ElevatorTests
     }
 
     [Fact]
-    public void AddStop_MultipleStops_AddsStopsInCorrectOrder()
+    public void AddStop_MultipleStops_AddsStopsCorrectOrder()
     {
         List<int> testStops = [2, 5, 4];
         Elevator elevator = new();
